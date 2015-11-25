@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Weather</string>
+
+    <string name="action_settings">Settings</string>
+
+    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="slogan_welcome">Designed for Keyboard.</string>
+    <string name="title_activity_search">SearchActivity</string>
+    <string name="search_hint">请输入要搜索的城市名</string>
+
+</resources>
