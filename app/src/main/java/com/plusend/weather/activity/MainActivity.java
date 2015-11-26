@@ -25,11 +25,7 @@ import com.plusend.weather.data.CityHelper;
 import com.plusend.weather.global.Constant;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,42 +39,23 @@ public class MainActivity extends AppCompatActivity {
     private ImageView iv_delete;
 
     public static String cityId;
-    private List<City> cityList = new ArrayList<>();
-    private List<String> resultList = new ArrayList<>();
+    private List<City> cityList = new ArrayList<>();//搜索结果
     private RecyclerView.LayoutManager layoutManager;
     private SearchAdapter mSearchAdapter;
     private SharedPreferences mSharedPreferences;
-    private Map<String, String> cityMap = new HashMap<>();
     private WeatherPagerAdapter pagerAdapter;
-    List<City> tempList = new ArrayList<>();
+    private List<City> tempList = new ArrayList<>();//已选城市列表
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSharedPreferences = MainActivity.this.getSharedPreferences("city", Context.MODE_PRIVATE);
+
         findViewById();
 
-        //获取城市列表
-        int size = mSharedPreferences.getInt(Constant.CITY, 0);
-        Log.d(TAG, "citySize:" + size);
-        if (size > 0) {
-            for (int i = 1; i <= size; i++) {
-                String cityString = mSharedPreferences.getString(String.valueOf(i), "");
-                Log.d(TAG, "cityString:" + cityString);
-                City city = JSON.parseObject(cityString, City.class);
-                cityId = city.getCityId();
-                cityId = mSharedPreferences.getString(String.valueOf(i), "");
-                Log.d(TAG, "cityId:" + cityId);
-                tempList.add(city);
-            }
-            pagerAdapter.setCityList(tempList);
-            vp.setAdapter(pagerAdapter);
-            tabs.setViewPager(vp);
-            iv_delete.setVisibility(View.VISIBLE);
-        } else {
-            iv_delete.setVisibility(View.GONE);
-        }
+        setListener();
+
         // testDb();
     }
 
@@ -90,16 +67,81 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViewById() {
-        rl_main = (RelativeLayout) findViewById(R.id.rl_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         // 替换系统ActionBar
         setSupportActionBar(toolbar);
+
+        rl_main = (RelativeLayout) findViewById(R.id.rl_main);
+        vp = (ViewPager) findViewById(R.id.pager);
+        tabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        iv_delete = (ImageView) findViewById(R.id.iv_delete);
+
+        // 搜索
         rv_search = (RecyclerView) findViewById(R.id.rv_search);
+    }
+
+    private void setListener() {
+
+        pagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager());
+        //获取城市列表
+        int size = mSharedPreferences.getInt(Constant.CITY, 0);
+        Log.d(TAG, "citySize:" + size);
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                String cityString = mSharedPreferences.getString(String.valueOf(i), "");
+                Log.d(TAG, "cityString:" + cityString);
+                City city = JSON.parseObject(cityString, City.class);
+                tempList.add(city);
+            }
+
+            iv_delete.setVisibility(View.VISIBLE);
+        } else {
+            iv_delete.setVisibility(View.GONE);
+        }
+
+        pagerAdapter.setCityList(tempList);
+        vp.setAdapter(pagerAdapter);
+        tabs.setViewPager(vp);
+
+        // 删除事件
+        iv_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int size = mSharedPreferences.getInt("citySize", 0);
+                int position = vp.getCurrentItem();
+                Log.d(TAG, "position:" + position);
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+
+                if (size == 1) {
+                    iv_delete.setVisibility(View.GONE);
+                }
+                // size大于1的时候,将数据前移,覆盖position位置的数据,同时删除最后一个
+                if (size > 1) {
+
+                    for (int i = position; i < size - 1; i++) {
+                        String next = mSharedPreferences.getString(String.valueOf(i + 1), "");
+                        editor.putString(String.valueOf(i), next);
+                    }
+                }
+                editor.remove(String.valueOf(size - 1));
+                editor.putInt(Constant.CITY, size - 1);
+                editor.apply();
+
+                tempList.remove(position);
+                pagerAdapter.updateUI(tempList);
+
+            }
+        });
+
+        // 搜索
         layoutManager = new LinearLayoutManager(this);
         rv_search.setLayoutManager(layoutManager);
         //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
         rv_search.setHasFixedSize(true);
+
         mSearchAdapter = new SearchAdapter(cityList);
+        rv_search.setAdapter(mSearchAdapter);
+
         mSearchAdapter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,55 +152,28 @@ public class MainActivity extends AppCompatActivity {
                 String cityJson = JSON.toJSONString(city);
                 Log.d(TAG, "cityJson:" + cityJson);
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
-                editor.putString(String.valueOf(size + 1), cityJson);
+                editor.putString(String.valueOf(size), cityJson);
                 editor.putInt(Constant.CITY, size + 1);
                 editor.apply();
 
                 tempList.add(city);
-                pagerAdapter.setCityList(tempList);
-                pagerAdapter.notifyDataSetChanged();
+                pagerAdapter.updateUI(tempList);
 
                 cityList.clear();
-                mSearchAdapter.notifyDataSetChanged();
+                mSearchAdapter.update(cityList);
+                rv_search.setVisibility(View.GONE);
+
                 rl_main.setVisibility(View.VISIBLE);
                 tabs.setVisibility(View.VISIBLE);
                 vp.setVisibility(View.VISIBLE);
-                rv_search.setVisibility(View.GONE);
 
-            }
-        });
-        rv_search.setAdapter(mSearchAdapter);
-        vp = (ViewPager) findViewById(R.id.pager);
-        pagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager());
-
-        tabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
-        iv_delete = (ImageView) findViewById(R.id.iv_delete);
-        iv_delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int size = mSharedPreferences.getInt("citySize", 0);
-                if (size > 0) {
-                    int position = vp.getCurrentItem();
-                    Log.d(TAG, "position:" + position);
-
-                    SharedPreferences.Editor editor = mSharedPreferences.edit();
-                    editor.remove(String.valueOf(position + 1));
-                    editor.putInt(Constant.CITY, size - 1);
-                    editor.apply();
-
-                    tempList.remove(position);
-                    pagerAdapter.setCityList(tempList);
-                    pagerAdapter.notifyDataSetChanged();
+                if (size == 0) {
+                    iv_delete.setVisibility(View.VISIBLE);
                 }
-                if (size == 1) {
-                    iv_delete.setVisibility(View.GONE);
-                }
-
             }
         });
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -183,11 +198,11 @@ public class MainActivity extends AppCompatActivity {
                     rv_search.setVisibility(View.VISIBLE);
                 } else {
                     cityList.clear();
-                    mSearchAdapter.notifyDataSetChanged();
+                    mSearchAdapter.update(cityList);
+                    rv_search.setVisibility(View.GONE);
                     rl_main.setVisibility(View.VISIBLE);
                     tabs.setVisibility(View.VISIBLE);
                     vp.setVisibility(View.VISIBLE);
-                    rv_search.setVisibility(View.GONE);
                 }
                 return false;
             }

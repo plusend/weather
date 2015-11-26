@@ -49,4 +49,13 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
         return WeatherFragment.getInstance(args);
     }
 
+    @Override
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
+    }
+
+    public void updateUI(List<City> list){
+        this.cityList = list;
+        notifyDataSetChanged();
+    }
 }
