@@ -1,4 +1,4 @@
-package com.plusend.weather.activity;
+package com.plusend.weather.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,7 +17,7 @@ import java.util.List;
  * Provide views to RecyclerView with data from mDataSet.
  */
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
-    private static final String TAG = "CustomAdapter";
+    private static final String TAG = "SearchAdapter";
 
     private List<City> mDataSet = new ArrayList<>();
 

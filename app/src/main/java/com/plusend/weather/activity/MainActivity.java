@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import com.alibaba.fastjson.JSON;
 import com.astuetz.PagerSlidingTabStrip;
 import com.plusend.weather.R;
+import com.plusend.weather.adapter.SearchAdapter;
 import com.plusend.weather.adapter.WeatherPagerAdapter;
 import com.plusend.weather.bean.City;
 import com.plusend.weather.data.CityHelper;
