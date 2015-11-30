@@ -68,12 +68,6 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.ViewHolder> 
     }
     // END_INCLUDE(recyclerViewSampleViewHolder)
 
-    private View.OnClickListener mOnClickListener;
-
-    public void setOnClickListener(View.OnClickListener onClickListener) {
-        this.mOnClickListener = onClickListener;
-    }
-
     /**
      * Initialize the dataset of the Adapter.
      *

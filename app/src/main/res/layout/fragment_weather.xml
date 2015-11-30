@@ -11,12 +11,12 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
             <RelativeLayout
                 android:id="@+id/rl_main"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginTop="85dp"
                 android:padding="24dp">
 
@@ -63,8 +63,8 @@
                     android:id="@+id/tv_pm25"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignStart="@id/tv_tmp"
-                    android:layout_below="@id/tv_weather"
+                    android:layout_below="@+id/tv_tmp_scope"
+                    android:layout_marginStart="48dp"
                     android:padding="4dp"
                     android:text="PM2.5 112"
                     android:textSize="16sp" />
@@ -74,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignStart="@id/tv_tmp"
-                    android:layout_below="@id/tv_pm25"
+                    android:layout_below="@id/tv_weather"
                     android:padding="4dp"
                     android:text="更新时间:2015-11-27 16:51"
                     android:textSize="16sp" />
