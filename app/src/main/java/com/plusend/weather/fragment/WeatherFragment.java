@@ -81,7 +81,7 @@ public class WeatherFragment extends Fragment {
         rv_daily.setAdapter(dailyAdapter);
 
         srl_main = (SwipeRefreshLayout) root.findViewById(R.id.srl_main);
-        srl_main.setColorSchemeColors(R.color.colorPrimaryDark, R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryBack);
+        srl_main.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryBack);
         srl_main.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
