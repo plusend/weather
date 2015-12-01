@@ -120,7 +120,12 @@ public class WeatherFragment extends Fragment {
                     @Override
                     public void onNext(String result) {
                         Log.d(TAG, "result:" + result);
-
+                        // 网络出错
+                        if (result == null) {
+                            Toast.makeText(getActivity(), "Connected error!", Toast.LENGTH_SHORT).show();
+                            srl_main.setRefreshing(false);
+                            return;
+                        }
                         Weather weather = JSON.parseObject(result, Weather.class);
                         Log.d(TAG, "weather:" + weather);
 
@@ -132,13 +137,12 @@ public class WeatherFragment extends Fragment {
 
                     @Override
                     public void onCompleted() {
-                        Toast.makeText(getActivity(), "Updated!", Toast.LENGTH_SHORT).show();
+
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
-                        Log.e(TAG, e.getMessage());
                         Toast.makeText(getActivity(), "Something error!", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -163,5 +167,7 @@ public class WeatherFragment extends Fragment {
 
         dailyList = weather.getDailyForecast();
         dailyAdapter.update(dailyList);
+
+        Toast.makeText(getActivity(), "Updated!", Toast.LENGTH_SHORT).show();
     }
 }
