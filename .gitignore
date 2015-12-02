@@ -35,6 +35,7 @@ build/
 # Mac system files
 .DS_Store
 
+*.jks
 *.keystore
 *.apk
 gradle.properties

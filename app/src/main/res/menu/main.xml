@@ -4,10 +4,22 @@
     tools:context=".MainActivity">
     <item
         android:id="@+id/menu_search"
-        android:orderInCategory="80"
-        android:title="action_search"
         android:icon="@mipmap/ic_add"
+        android:orderInCategory="80"
+        android:title="@string/action_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="ifRoom|collapseActionView" />
+    <item
+        android:id="@+id/share"
+        android:icon="@mipmap/ic_share"
+        android:orderInCategory="80"
+        android:title="@string/action_share"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/setting"
+        android:icon="@mipmap/ic_update"
+        android:orderInCategory="80"
+        android:title="@string/action_update"
+        app:showAsAction="never" />
 
 </menu>

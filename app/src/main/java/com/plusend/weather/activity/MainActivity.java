@@ -1,8 +1,14 @@
 package com.plusend.weather.activity;
 
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -24,9 +31,15 @@ import com.plusend.weather.adapter.WeatherPagerAdapter;
 import com.plusend.weather.bean.City;
 import com.plusend.weather.data.CityHelper;
 import com.plusend.weather.global.Constant;
+import com.squareup.okhttp.Request;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import im.fir.sdk.FIR;
+import im.fir.sdk.callback.VersionCheckCallback;
+import im.fir.sdk.version.AppVersion;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,12 +53,16 @@ public class MainActivity extends AppCompatActivity {
     private ImageView iv_delete;
 
     public static String cityId;
-    private List<City> cityList = new ArrayList<>();//搜索结果
+    private List<City> cityList = new ArrayList<>();// 搜索结果
     private RecyclerView.LayoutManager layoutManager;
     private SearchAdapter mSearchAdapter;
     private SharedPreferences mSharedPreferences;
     private WeatherPagerAdapter pagerAdapter;
-    private List<City> tempList = new ArrayList<>();//已选城市列表
+    private List<City> tempList = new ArrayList<>();// 已选城市列表
+    private long downloadId = -1;// 下载Id
+    private String downloadFile;// 新版本名字
+    private CompleteReceiver completeReceiver;// 下载监听器
+    private Object object = new Object(); // 加锁对象
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        // 搜索
         SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -208,6 +226,9 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        // 分享
+        MenuItem menuItem = menu.findItem(R.id.share);
         return true;
     }
 
@@ -216,4 +237,83 @@ public class MainActivity extends AppCompatActivity {
         return super.onMenuOpened(featureId, menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.setting:
+                FIR.checkForUpdateInFIR(Constant.FIR_API_TOKEN, new VersionCheckCallback() {
+
+                    @Override
+                    public void onSuccess(AppVersion appVersion, boolean b) {
+                        Log.d(TAG, "check success");
+                        Log.d(TAG, "appVersion:" + appVersion);
+                        // 防止同时下载
+                        synchronized (object) {
+                            if (downloadId == -1) {
+                                // 下载新版本
+                                DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(appVersion.getUpdateUrl()));
+                                downloadFile = "KeyboardWeather" + appVersion.getVersionCode() + ".apk";
+                                request.setDestinationInExternalPublicDir("KeyboardWeather", downloadFile);
+                                // Wi-Fi下载
+                                request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+                                downloadId = downloadManager.enqueue(request);
+
+                                // 注册下载完成监听器
+                                completeReceiver = new CompleteReceiver();
+                                /** register download success broadcast **/
+                                registerReceiver(completeReceiver,
+                                        new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                            }
+                        }
+                        super.onSuccess(appVersion, b);
+                    }
+
+                    @Override
+                    public void onFail(Request request, Exception e) {
+                        Log.d(TAG, "check fail;");
+                        super.onFail(request, e);
+                    }
+
+                    @Override
+                    public void onStart() {
+                        Log.d(TAG, "check start;");
+                        super.onStart();
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        Log.d(TAG, "check finish;");
+                        super.onFinish();
+                    }
+                });
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    // 下载完成广播接受者
+    class CompleteReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // 获取下载Id
+            long completeDownloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            if (downloadId == completeDownloadId) {
+                // 安装新版本
+                Intent installIntent = new Intent(Intent.ACTION_VIEW);
+                DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                installIntent.setDataAndType(downloadManager.getUriForDownloadedFile(downloadId),
+                        "application/vnd.android.package-archive");
+                MainActivity.this.startActivity(installIntent);
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // 取消下载完成监听
+        unregisterReceiver(completeReceiver);
+    }
 }

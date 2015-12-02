@@ -31,4 +31,5 @@ dependencies {
     compile 'com.android.support:cardview-v7:23.1.0'
     compile 'com.android.support:recyclerview-v7:23.1.0'
     compile 'com.jpardogo.materialtabstrip:library:1.1.0'
+    compile 'im.fir:sdk:latest.integration@aar'
 }

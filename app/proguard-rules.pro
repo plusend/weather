@@ -15,3 +15,8 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+#For fir.im sdk
+#-dontwarn com.squareup.okhttp.**
+#-keep class com.squareup.okhttp.** { *;}
+#-dontwarn okio.**
