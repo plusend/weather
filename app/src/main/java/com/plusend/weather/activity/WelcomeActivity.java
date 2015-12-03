@@ -1,4 +1,4 @@
-package com.plusend.weather;
+package com.plusend.weather.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,7 +8,7 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.plusend.weather.activity.MainActivity;
+import com.plusend.weather.R;
 
 public class WelcomeActivity extends AppCompatActivity {
 

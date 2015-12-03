@@ -6,9 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,10 +30,15 @@ import com.plusend.weather.adapter.SearchAdapter;
 import com.plusend.weather.adapter.WeatherPagerAdapter;
 import com.plusend.weather.bean.City;
 import com.plusend.weather.data.CityHelper;
-import com.plusend.weather.global.Constant;
+import com.plusend.weather.global.Constants;
+import com.plusend.weather.global.Util;
 import com.squareup.okhttp.Request;
+import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.sdk.modelmsg.WXImageObject;
+import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +48,7 @@ import im.fir.sdk.version.AppVersion;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String TAG = "MainActivity";
 
     private RelativeLayout rl_main;
     private Toolbar toolbar;
@@ -52,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
     private PagerSlidingTabStrip tabs;
     private ImageView iv_delete;
 
-    public static String cityId;
     private List<City> cityList = new ArrayList<>();// 搜索结果
     private RecyclerView.LayoutManager layoutManager;
     private SearchAdapter mSearchAdapter;
@@ -64,24 +68,21 @@ public class MainActivity extends AppCompatActivity {
     private CompleteReceiver completeReceiver;// 下载监听器
     private Object object = new Object(); // 加锁对象
 
+    private IWXAPI wxAPI;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSharedPreferences = MainActivity.this.getSharedPreferences("city", Context.MODE_PRIVATE);
+        // 微信分享
+        wxAPI = WXAPIFactory.createWXAPI(this, Constants.APP_ID, true);
+        wxAPI.registerApp(Constants.APP_ID);
 
         findViewById();
 
         setListener();
 
-        // testDb();
-    }
-
-    private void testDb() {
-        List<City> cityList = new CityHelper(this).getResultCityList("chaoyang");
-        for (City city : cityList) {
-            Log.d(TAG, "city:" + city);
-        }
     }
 
     private void findViewById() {
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
         pagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager());
         //获取城市列表
-        int size = mSharedPreferences.getInt(Constant.CITY, 0);
+        int size = mSharedPreferences.getInt(Constants.CITY, 0);
         Log.d(TAG, "citySize:" + size);
         if (size > 0) {
             for (int i = 0; i < size; i++) {
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 editor.remove(String.valueOf(size - 1));
-                editor.putInt(Constant.CITY, size - 1);
+                editor.putInt(Constants.CITY, size - 1);
                 editor.apply();
 
                 tempList.remove(position);
@@ -171,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "cityJson:" + cityJson);
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putString(String.valueOf(size), cityJson);
-                editor.putInt(Constant.CITY, size + 1);
+                editor.putInt(Constants.CITY, size + 1);
                 editor.apply();
 
                 tempList.add(city);
@@ -240,8 +241,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.share:
+
+                // 分享到微信
+                Bitmap bitmap = Util.getScreen(MainActivity.this);
+                WXImageObject imageObject = new WXImageObject(bitmap);
+
+                WXMediaMessage wxMsg = new WXMediaMessage();
+                wxMsg.mediaObject = imageObject;
+
+                Bitmap thumbBmp = Bitmap.createScaledBitmap(bitmap, 150, 150, true);
+                bitmap.recycle();
+                wxMsg.thumbData = Util.bmpToByteArray(thumbBmp, true);
+
+                SendMessageToWX.Req wxReq = new SendMessageToWX.Req();
+                wxReq.transaction = String.valueOf(System.currentTimeMillis());
+                wxReq.message = wxMsg;
+                wxReq.scene = SendMessageToWX.Req.WXSceneTimeline;
+
+                wxAPI.sendReq(wxReq);
+                break;
             case R.id.setting:
-                FIR.checkForUpdateInFIR(Constant.FIR_API_TOKEN, new VersionCheckCallback() {
+                FIR.checkForUpdateInFIR(Constants.FIR_API_TOKEN, new VersionCheckCallback() {
 
                     @Override
                     public void onSuccess(AppVersion appVersion, boolean b) {
@@ -314,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         // 取消下载完成监听
-        unregisterReceiver(completeReceiver);
+        if (completeReceiver != null) {
+            unregisterReceiver(completeReceiver);
+        }
     }
 }

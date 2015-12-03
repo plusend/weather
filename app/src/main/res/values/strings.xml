@@ -9,5 +9,12 @@
     <string name="action_share">share</string>
     <string name="action_search">search</string>
     <string name="action_update">update</string>
+    <string name="title_activity_wxentry">WXEntryActivity</string>
+
+    // 微信分享结果
+    <string name="errcode_success">发送成功</string>
+    <string name="errcode_cancel">发送取消</string>
+    <string name="errcode_deny">发送被拒绝</string>
+    <string name="errcode_unknown">发送返回</string>
 
 </resources>

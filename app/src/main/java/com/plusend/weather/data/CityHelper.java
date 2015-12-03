@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.plusend.weather.bean.City;
 import com.plusend.weather.db.DBHelper;
-import com.plusend.weather.global.Constant;
+import com.plusend.weather.global.Constants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class CityHelper {
      */
     public static String request(String cityId) {
 
-        String httpUrl = Constant.API + "cityid=" + cityId + "&key=" + Constant.KEY;
+        String httpUrl = Constants.API + "cityid=" + cityId + "&key=" + Constants.KEY;
 
         BufferedReader reader;
         String result = null;
