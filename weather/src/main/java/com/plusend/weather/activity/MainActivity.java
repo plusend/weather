@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
                                 // 下载新版本
                                 DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(appVersion.getUpdateUrl()));
-                                downloadFile = "KeyboardWeather" + appVersion.getVersionCode() + ".apk";
+                                downloadFile = "KeyboardWeather.apk";
                                 request.setDestinationInExternalPublicDir("KeyboardWeather", downloadFile);
                                 // Wi-Fi下载
                                 request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
