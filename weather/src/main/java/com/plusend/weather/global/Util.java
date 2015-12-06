@@ -1,9 +1,12 @@
 package com.plusend.weather.global;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.view.Display;
+import android.util.DisplayMetrics;
 import android.view.View;
 
 import java.io.ByteArrayOutputStream;
@@ -23,11 +26,11 @@ public class Util {
         Rect rect = new Rect();
         view.getWindowVisibleDisplayFrame(rect);
         int statusBarHeights = rect.top;
-        Display display = activity.getWindowManager().getDefaultDisplay();
 
         // 获取屏幕宽和高
-        int widths = display.getWidth();
-        int heights = display.getHeight();
+        DisplayMetrics dm = activity.getResources().getDisplayMetrics();
+        int widths = dm.widthPixels;
+        int heights = dm.heightPixels;
 
         // 允许当前窗口保存缓存信息
         view.setDrawingCacheEnabled(true);
@@ -58,5 +61,19 @@ public class Util {
         }
 
         return result;
+    }
+
+    public static int getVersionCode(Context context) {
+        int version;
+        PackageManager packageManager = context.getPackageManager();
+        // getPackageName()是你当前类的包名，0代表是获取版本信息
+        PackageInfo packInfo = null;
+        try {
+            packInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        version = packInfo != null ? packInfo.versionCode : 0;
+        return version;
     }
 }

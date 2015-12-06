@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.astuetz.PagerSlidingTabStrip;
@@ -51,14 +52,12 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
 
     private RelativeLayout rl_main;
-    private Toolbar toolbar;
     private RecyclerView rv_search;
     private ViewPager vp;
     private PagerSlidingTabStrip tabs;
     private ImageView iv_delete;
 
     private List<City> cityList = new ArrayList<>();// 搜索结果
-    private RecyclerView.LayoutManager layoutManager;
     private SearchAdapter mSearchAdapter;
     private SharedPreferences mSharedPreferences;
     private WeatherPagerAdapter pagerAdapter;
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private long downloadId = -1;// 下载Id
     private String downloadFile;// 新版本名字
     private CompleteReceiver completeReceiver;// 下载监听器
-    private Object object = new Object(); // 加锁对象
+    private final Object object = new Object(); // 加锁对象
 
     private IWXAPI wxAPI;
 
@@ -86,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViewById() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         // 替换系统ActionBar
         setSupportActionBar(toolbar);
 
@@ -153,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 搜索
-        layoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         rv_search.setLayoutManager(layoutManager);
         //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
         rv_search.setHasFixedSize(true);
@@ -228,8 +227,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 分享
-        MenuItem menuItem = menu.findItem(R.id.share);
         return true;
     }
 
@@ -271,20 +268,28 @@ public class MainActivity extends AppCompatActivity {
                         // 防止同时下载
                         synchronized (object) {
                             if (downloadId == -1) {
-                                // 下载新版本
-                                DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(appVersion.getUpdateUrl()));
-                                downloadFile = "KeyboardWeather.apk";
-                                request.setDestinationInExternalPublicDir("KeyboardWeather", downloadFile);
-                                // Wi-Fi下载
-                                request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-                                downloadId = downloadManager.enqueue(request);
+                                // 获取当前版本号
+                                int version = Util.getVersionCode(MainActivity.this);
 
-                                // 注册下载完成监听器
-                                completeReceiver = new CompleteReceiver();
-                                /** register download success broadcast **/
-                                registerReceiver(completeReceiver,
-                                        new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                                if (appVersion.getVersionCode() > version) {
+                                    // 下载新版本
+                                    DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(appVersion.getUpdateUrl()));
+                                    downloadFile = "KeyboardWeather.apk";
+                                    request.setDestinationInExternalPublicDir("KeyboardWeather", downloadFile);
+                                    // Wi-Fi下载
+                                    request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+                                    downloadId = downloadManager.enqueue(request);
+                                    Toast.makeText(MainActivity.this, R.string.version_success, Toast.LENGTH_SHORT).show();
+
+                                    // 注册下载完成监听器
+                                    completeReceiver = new CompleteReceiver();
+                                    /** register download success broadcast **/
+                                    registerReceiver(completeReceiver,
+                                            new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                                } else {
+                                    Toast.makeText(MainActivity.this, R.string.version_none, Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
                         super.onSuccess(appVersion, b);

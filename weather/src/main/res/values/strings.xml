@@ -17,4 +17,8 @@
     <string name="errcode_deny">发送被拒绝</string>
     <string name="errcode_unknown">发送返回</string>
 
+    // 版本检测
+    <string name="version_success">下载新版本</string>
+    <string name="version_none">已经是最新版本啦!</string>
+
 </resources>
