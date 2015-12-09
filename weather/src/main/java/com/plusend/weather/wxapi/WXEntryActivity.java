@@ -5,8 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.plusend.weather.R;
 import com.plusend.weather.global.Constants;
+import com.plusend.weather.R;
 import com.tencent.mm.sdk.modelbase.BaseReq;
 import com.tencent.mm.sdk.modelbase.BaseResp;
 import com.tencent.mm.sdk.openapi.IWXAPI;
@@ -24,8 +24,8 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wxentry);
 
-        api = WXAPIFactory.createWXAPI(this, Constants.APP_ID, false);
-        api.registerApp(Constants.APP_ID);
+        api = WXAPIFactory.createWXAPI(this, Constants.WX_APP_ID, false);
+        api.registerApp(Constants.WX_APP_ID);
         api.handleIntent(getIntent(), this);
     }
 

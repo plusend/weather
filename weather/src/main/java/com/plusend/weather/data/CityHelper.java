@@ -5,9 +5,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.plusend.weather.global.Constants;
 import com.plusend.weather.bean.City;
 import com.plusend.weather.db.DBHelper;
-import com.plusend.weather.global.Constants;
 
 import java.io.BufferedReader;
 import java.io.IOException;

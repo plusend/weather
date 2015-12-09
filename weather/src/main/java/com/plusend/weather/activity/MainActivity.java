@@ -26,12 +26,12 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.astuetz.PagerSlidingTabStrip;
+import com.plusend.weather.global.Constants;
 import com.plusend.weather.R;
 import com.plusend.weather.adapter.SearchAdapter;
 import com.plusend.weather.adapter.WeatherPagerAdapter;
 import com.plusend.weather.bean.City;
 import com.plusend.weather.data.CityHelper;
-import com.plusend.weather.global.Constants;
 import com.plusend.weather.global.Util;
 import com.squareup.okhttp.Request;
 import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
@@ -75,8 +75,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mSharedPreferences = MainActivity.this.getSharedPreferences("city", Context.MODE_PRIVATE);
         // 微信分享
-        wxAPI = WXAPIFactory.createWXAPI(this, Constants.APP_ID, true);
-        wxAPI.registerApp(Constants.APP_ID);
+        wxAPI = WXAPIFactory.createWXAPI(this, Constants.WX_APP_ID, true);
+        wxAPI.registerApp(Constants.WX_APP_ID);
 
         findViewById();
 
