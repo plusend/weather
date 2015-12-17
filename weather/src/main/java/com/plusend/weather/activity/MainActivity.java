@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private String downloadFile;// 新版本名字
     private CompleteReceiver completeReceiver;// 下载监听器
     private final Object object = new Object(); // 加锁对象
+    private boolean autoUpdate = true;
 
     private IWXAPI wxAPI;
 
@@ -81,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById();
 
         setListener();
+
+        checkUpdate();
 
     }
 
@@ -259,64 +262,75 @@ public class MainActivity extends AppCompatActivity {
                 wxAPI.sendReq(wxReq);
                 break;
             case R.id.setting:
-                FIR.checkForUpdateInFIR(Constants.FIR_API_TOKEN, new VersionCheckCallback() {
-
-                    @Override
-                    public void onSuccess(AppVersion appVersion, boolean b) {
-                        Log.d(TAG, "check success");
-                        Log.d(TAG, "appVersion:" + appVersion);
-                        // 防止同时下载
-                        synchronized (object) {
-                            if (downloadId == -1) {
-                                // 获取当前版本号
-                                int version = Util.getVersionCode(MainActivity.this);
-
-                                if (appVersion.getVersionCode() > version) {
-                                    // 下载新版本
-                                    DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(appVersion.getUpdateUrl()));
-                                    downloadFile = "KeyboardWeather.apk";
-                                    request.setDestinationInExternalPublicDir("KeyboardWeather", downloadFile);
-                                    // Wi-Fi下载
-                                    request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-                                    downloadId = downloadManager.enqueue(request);
-                                    Toast.makeText(MainActivity.this, R.string.version_success, Toast.LENGTH_SHORT).show();
-
-                                    // 注册下载完成监听器
-                                    completeReceiver = new CompleteReceiver();
-                                    /** register download success broadcast **/
-                                    registerReceiver(completeReceiver,
-                                            new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-                                } else {
-                                    Toast.makeText(MainActivity.this, R.string.version_none, Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        }
-                        super.onSuccess(appVersion, b);
-                    }
-
-                    @Override
-                    public void onFail(Request request, Exception e) {
-                        Log.d(TAG, "check fail;");
-                        super.onFail(request, e);
-                    }
-
-                    @Override
-                    public void onStart() {
-                        Log.d(TAG, "check start;");
-                        super.onStart();
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        Log.d(TAG, "check finish;");
-                        super.onFinish();
-                    }
-                });
+                // 手动更新
+                autoUpdate = false;
+                checkUpdate();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    //检测更新
+    void checkUpdate() {
+        FIR.checkForUpdateInFIR(Constants.FIR_API_TOKEN, new VersionCheckCallback() {
+
+            @Override
+            public void onSuccess(AppVersion appVersion, boolean b) {
+                Log.d(TAG, "check success");
+                Log.d(TAG, "appVersion:" + appVersion);
+                // 防止同时下载
+                synchronized (object) {
+                    if (downloadId == -1) {
+                        // 获取当前版本号
+                        int version = Util.getVersionCode(MainActivity.this);
+
+                        if (appVersion.getVersionCode() > version) {
+                            // 下载新版本
+                            DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(appVersion.getUpdateUrl()));
+                            downloadFile = "KeyboardWeather.apk";
+                            request.setDestinationInExternalPublicDir("KeyboardWeather", downloadFile);
+                            // Wi-Fi下载
+                            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+                            downloadId = downloadManager.enqueue(request);
+                            Toast.makeText(MainActivity.this, R.string.version_success, Toast.LENGTH_SHORT).show();
+
+                            // 注册下载完成监听器
+                            completeReceiver = new CompleteReceiver();
+                            /** register download success broadcast **/
+                            registerReceiver(completeReceiver,
+                                    new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                        } else {
+                            if (!autoUpdate) {
+                                Toast.makeText(MainActivity.this, R.string.version_none, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                }
+                super.onSuccess(appVersion, b);
+            }
+
+            @Override
+            public void onFail(Request request, Exception e) {
+                Log.d(TAG, "check fail;");
+                super.onFail(request, e);
+            }
+
+            @Override
+            public void onStart() {
+                Log.d(TAG, "check start;");
+                super.onStart();
+            }
+
+            @Override
+            public void onFinish() {
+                Log.d(TAG, "check finish;");
+                super.onFinish();
+            }
+        });
+    }
+
+    ;
 
     // 下载完成广播接受者
     class CompleteReceiver extends BroadcastReceiver {
