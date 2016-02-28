@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "MainActivity";
 
-    private RelativeLayout rl_main;
+    private RelativeLayout rl_main, empty;
     private RecyclerView rv_search;
     private ViewPager vp;
     private PagerSlidingTabStrip tabs;
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         rl_main = (RelativeLayout) findViewById(R.id.rl_main);
+        empty = (RelativeLayout) findViewById(R.id.empty);
         vp = (ViewPager) findViewById(R.id.pager);
         tabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
         iv_delete = (ImageView) findViewById(R.id.iv_delete);
@@ -116,7 +117,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             iv_delete.setVisibility(View.VISIBLE);
+            empty.setVisibility(View.GONE);
         } else {
+            empty.setVisibility(View.VISIBLE);
             iv_delete.setVisibility(View.GONE);
         }
 
@@ -135,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (size == 1) {
                     iv_delete.setVisibility(View.GONE);
+                    empty.setVisibility(View.VISIBLE);
                 }
                 // size大于1的时候,将数据前移,覆盖position位置的数据,同时删除最后一个
                 if (size > 1) {
@@ -183,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
                 cityList.clear();
                 mSearchAdapter.update(cityList);
                 rv_search.setVisibility(View.GONE);
+                empty.setVisibility(View.GONE);
 
                 rl_main.setVisibility(View.VISIBLE);
                 tabs.setVisibility(View.VISIBLE);
@@ -218,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
                     tabs.setVisibility(View.GONE);
                     vp.setVisibility(View.GONE);
                     rv_search.setVisibility(View.VISIBLE);
+                    empty.setVisibility(View.GONE);
                 } else {
                     cityList.clear();
                     mSearchAdapter.update(cityList);

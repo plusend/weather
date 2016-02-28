@@ -6,9 +6,9 @@
     <string name="slogan_welcome">Designed for Keyboard.</string>
     <string name="title_activity_search">SearchActivity</string>
     <string name="search_hint">请输入要搜索的城市名</string>
-    <string name="action_share">share</string>
-    <string name="action_search">search</string>
-    <string name="action_update">update</string>
+    <string name="action_share">分享到朋友圈</string>
+    <string name="action_search">添加城市</string>
+    <string name="action_update">检查更新</string>
     <string name="title_activity_wxentry">WXEntryActivity</string>
 
     // 微信分享结果
@@ -20,5 +20,7 @@
     // 版本检测
     <string name="version_success">下载新版本</string>
     <string name="version_none">已经是最新版本啦!</string>
+    <string name="about">Develop by plusend.</string>
+    <string name="tip">点击右上角 \"+\" 来添加城市</string>
 
 </resources>
